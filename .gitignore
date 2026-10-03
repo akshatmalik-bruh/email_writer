@@ -1,0 +1,39 @@
+# Python bytecode and test/tool caches
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Local environment and secrets
+.env
+.env.*
+!.env.example
+venv/
+.venv/
+
+# Local databases and SQLite journals
+*.sqlite3
+*.db
+*.sqlite3-wal
+*.sqlite3-shm
+*.db-wal
+*.db-shm
+
+# Downloaded models and generated build output
+models/
+build/
+dist/
+
+# Logs and temporary files
+*.log
+*.tmp
+*.bak
+
+# Operating system and IDE files
+.DS_Store
+Thumbs.db
+.vs/
+.idea/

@@ -1,0 +1,6 @@
+pywebview>=5.0
+faster-whisper>=1.0
+# faster-whisper passes metadata_errors to av.open(); PyAV 19 removed it.
+av>=11,<19
+pywin32>=306; platform_system == "Windows"
+psutil>=5.9

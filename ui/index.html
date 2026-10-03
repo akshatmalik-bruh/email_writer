@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Correspond — Local Email Studio</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+<div id="app">
+
+  <!-- ═══════════════════════════════════════════════════════════
+       COMPACT TOP NAVIGATION
+  ════════════════════════════════════════════════════════════ -->
+  <nav id="sidebar" aria-label="Main navigation">
+    <div id="sidebar-brand">
+      <div class="brand-mark" aria-hidden="true">C</div>
+      <span class="brand-name">Correspond</span>
+    </div>
+
+    <div id="nav-links">
+      <button class="nav-btn active" data-screen="new-email" id="nav-new" aria-label="New email" title="New email">
+        <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 20H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h9"/><path d="m15 5 4 4M8 16l1-4L18 3a2.1 2.1 0 0 1 3 3l-9 9-4 1Z"/></svg></span><span class="nav-label">New email</span>
+      </button>
+      <button class="nav-btn" data-screen="reply-email" id="nav-reply" aria-label="Write a reply" title="Write a reply">
+        <span class="nav-icon" aria-hidden="true">↩</span><span class="nav-label">Write a reply</span>
+      </button>
+      <button class="nav-btn" data-screen="queue" id="nav-queue" aria-label="Draft queue" title="Draft queue">
+        <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M8 9h8M8 13h8M8 17h5"/></svg></span><span class="nav-label">Draft queue</span>
+      </button>
+      <button class="nav-btn" data-screen="settings" id="nav-settings" aria-label="Settings" title="Settings">
+        <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="m19.4 15 .1.1 1.1 1.9-1.8 3.1-2.2-.5a8 8 0 0 1-1.6.9l-.8 2.1h-3.6l-.8-2.1a8 8 0 0 1-1.6-.9l-2.2.5-1.8-3.1 1.1-1.9a8 8 0 0 1 0-1.9l-1.1-1.9 1.8-3.1 2.2.5a8 8 0 0 1 1.6-.9l.8-2.1h3.6l.8 2.1a8 8 0 0 1 1.6.9l2.2-.5 1.8 3.1-1.1 1.9a8 8 0 0 1 0 1.9Z" transform="translate(-1 -1) scale(1.08)"/></svg></span><span class="nav-label">Settings</span>
+      </button>
+    </div>
+
+    <div id="sidebar-status" title="Local model status">
+      <span id="status-dot"></span>
+      <span id="status-text">Checking local model…</span>
+    </div>
+  </nav>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       MAIN CONTENT
+  ════════════════════════════════════════════════════════════ -->
+  <main id="main">
+
+    <!-- ─────────────────────────────────────────────────────────
+         SCREEN 1: NEW EMAIL
+    ──────────────────────────────────────────────────────────── -->
+    <section id="screen-new-email" class="screen active">
+      <div id="welcome-view" class="welcome-view">
+        <div class="welcome-kicker"><span class="live-dot"></span> A quieter way to write</div>
+        <h1>Hi Neeraj ji,<br><span>how can I help you today?</span></h1>
+        <p>Tell me what you need to say. I’ll shape it into a clear, thoughtful email.</p>
+        <button id="welcome-draft-btn" class="btn btn-primary welcome-cta">Draft an email <span aria-hidden="true">→</span></button>
+      </div>
+
+      <div id="compose-view" class="compose-view">
+        <header class="page-heading compose-heading">
+          <h1 id="compose-title" class="screen-title">What would you like your email to say?</h1>
+        </header>
+
+        <div id="template-quick-use">
+          <select id="template-quick-picker" class="btn btn-primary template-action" aria-label="Choose a template">
+            <option value="">Choose a template</option>
+          </select>
+          <button id="manage-templates-btn" class="btn btn-primary template-action" type="button">Manage</button>
+        </div>
+
+      <!-- Contact picker -->
+      <div class="card">
+        <div class="form-group" style="margin-bottom:0">
+          <label for="contact-input">Recipient</label>
+          <div id="contact-picker-wrap">
+            <input
+              type="text"
+              id="contact-input"
+              placeholder="Search contacts or enter an email address…"
+              autocomplete="off"
+              aria-label="Recipient contact"
+              aria-expanded="false"
+              aria-haspopup="listbox"
+            />
+            <div id="contact-dropdown" role="listbox" aria-label="Contact suggestions"></div>
+          </div>
+          <input type="hidden" id="selected-contact-id" />
+          <div id="contact-selected-info" class="mt-2 text-sm text-muted" aria-live="polite"></div>
+        </div>
+      </div>
+
+      <!-- Input + Mic -->
+      <div class="card">
+        <label for="user-input">Your message or email <span class="label-hint">Write a request, or paste an email to polish</span></label>
+        <div id="input-row">
+          <textarea
+            id="user-input"
+            placeholder="For example: Sharma ji ko bolo payment kal tak bhej de, ₹50,000 hai"
+            aria-label="Your message in Hindi, Hinglish, or English"
+          ></textarea>
+          <button id="mic-btn" title="Start voice recording" aria-label="Start voice recording">
+            ◉
+          </button>
+        </div>
+
+        <!-- Recording indicator -->
+        <div id="rec-status" class="mt-2 text-sm hidden" aria-live="assertive">
+          <span class="recording-copy"><span class="recording-dot"></span> Recording…</span>
+          <button id="stop-rec-btn" class="btn btn-sm btn-danger">Stop recording</button>
+        </div>
+
+        <div id="draft-btn-row" class="mt-4">
+          <button id="draft-btn" class="btn btn-primary">
+            <span class="btn-icon">✦</span> Create draft
+          </button>
+          <div id="thinking-bar" role="status">
+            <div class="thinking-dots"><span></span><span></span><span></span></div>
+            <span>Writing locally…</span>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Result area -->
+      <div id="result-section" aria-live="polite">
+        <div id="result-panels">
+
+          <!-- Left: English email -->
+          <div class="card draft-output-card" id="draft-output-card" style="margin-bottom:0">
+          <div class="panel-label">Email draft</div>
+            <div id="draft-progress" class="draft-progress" role="status" aria-live="polite"><span class="generation-pulse"></span><span id="stream-status">Drafting subject…</span></div>
+            <input class="stream-hidden"
+              type="text"
+              id="email-subject"
+              placeholder="Subject"
+              aria-label="Email subject"
+              style="margin-bottom:10px;font-weight:600;"
+            />
+            <textarea class="stream-hidden"
+              id="email-body"
+              aria-label="Email body"
+              style="min-height:200px;"
+            ></textarea>
+            <div id="draft-refine-actions" class="mt-2 stream-hidden">
+              <button id="redraft-shorter-btn" class="btn btn-sm btn-secondary">
+                Make shorter
+              </button>
+              <button id="redraft-formal-btn" class="btn btn-sm btn-secondary" style="margin-left:8px;">
+                More formal
+              </button>
+            </div>
+          </div>
+
+          <!-- Hindi back-translation -->
+          <div class="card draft-summary-card stream-hidden" id="draft-summary-card" style="margin-bottom:0">
+            <div class="panel-label">Hindi summary</div>
+            <div id="summary-hi" aria-label="Hindi summary of the email"></div>
+          </div>
+        </div>
+
+        <!-- Action buttons -->
+        <div id="action-row" class="mt-4">
+          <button id="add-to-queue-btn" class="btn btn-outline">
+            <span class="btn-icon">＋</span> Add to queue
+          </button>
+          <button id="to-outlook-btn" class="btn btn-success">
+            <span class="btn-icon">↗</span> Create Outlook draft
+          </button>
+          <button id="discard-btn" class="btn btn-secondary">
+            <span class="btn-icon">×</span> Discard
+          </button>
+        </div>
+      </div>
+      </div><!-- /#compose-view -->
+    </section>
+
+    <section id="screen-reply-email" class="screen">
+      <header class="page-heading"><div><div class="eyebrow">RESPOND THOUGHTFULLY</div><h1 class="screen-title">Write a reply</h1></div></header>
+      <div class="reply-prompt-card">
+        <label for="reply-source">Enter or paste the email you received</label>
+        <textarea id="reply-source" placeholder="Paste the email here…" aria-label="Email you received"></textarea>
+        <label for="reply-recipient-input">Recipient <span class="text-muted">(optional)</span></label>
+        <div id="reply-contact-picker-wrap">
+          <input type="text" id="reply-recipient-input" placeholder="Search contacts or enter an email address…" autocomplete="off" aria-label="Optional reply recipient" aria-expanded="false" aria-haspopup="listbox" />
+          <div id="reply-contact-dropdown" role="listbox" aria-label="Recipient suggestions"></div>
+        </div>
+        <div id="reply-recipient-email" class="text-sm text-muted"></div>
+        <button id="reply-continue-btn" class="btn btn-primary">Continue <span aria-hidden="true">→</span></button>
+      </div>
+    </section>
+
+    <!-- ─────────────────────────────────────────────────────────
+         SCREEN 2: QUEUE
+    ──────────────────────────────────────────────────────────── -->
+    <section id="screen-queue" class="screen">
+      <header class="page-heading"><div><div class="eyebrow">YOUR WORKSPACE</div><h1 class="screen-title">Draft queue</h1></div></header>
+
+      <div id="queue-actions">
+        <button id="approve-all-btn" class="btn btn-success" disabled>
+          <span class="btn-icon">✓</span> Create all Outlook drafts
+        </button>
+        <button id="refresh-queue-btn" class="btn btn-secondary">
+          <span class="btn-icon">↻</span> Refresh
+        </button>
+        <span id="queue-count-label" class="text-muted text-sm"></span>
+      </div>
+
+      <div id="queue-list" role="list" aria-label="Draft email queue"></div>
+      <div id="queue-empty" class="hidden">
+        <span class="empty-mark" aria-hidden="true">—</span><br>
+        <span class="empty-title">Nothing in your queue</span><br>
+        <small>Your reviewed drafts will appear here.</small>
+      </div>
+    </section>
+
+    <!-- ─────────────────────────────────────────────────────────
+         SCREEN 3: SETTINGS
+    ──────────────────────────────────────────────────────────── -->
+    <section id="screen-settings" class="screen">
+      <header class="page-heading"><div><div class="eyebrow">PREFERENCES & CONNECTIONS</div><h1 class="screen-title">Settings</h1></div></header>
+
+      <!-- General settings -->
+      <div class="card settings-general-card">
+        <div class="settings-section-title">General</div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="setting-sender-name">Sender name</label>
+            <input type="text" id="setting-sender-name" value="Neeraj Kumar" readonly />
+          </div>
+          <div class="form-group">
+            <label for="setting-sign-off">Sign-off</label>
+            <input type="text" id="setting-sign-off" value="Regards," readonly />
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="setting-model">Local model</label>
+          <select id="setting-model">
+            <option value="gemma3:4b">gemma3:4b (Primary)</option>
+            <option value="qwen2.5:3b">qwen2.5:3b (Comparison)</option>
+            <option value="gemma3:1b">gemma3:1b (Fallback)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="setting-outlook-mode">Outlook action</label>
+          <select id="setting-outlook-mode">
+            <option value="draft">Create a draft (recommended)</option>
+            <option value="send">Send after confirmation and countdown</option>
+          </select>
+          <p class="field-note">Email is never sent without your confirmation.</p>
+        </div>
+        <div style="display:flex;gap:10px;margin-top:4px;">
+          <button id="save-settings-btn" class="btn btn-primary">Save preferences</button>
+        </div>
+      </div>
+
+      <!-- Contacts -->
+      <div class="card settings-contacts-card">
+        <div class="settings-section-title" style="display:flex;justify-content:space-between;align-items:center;">
+          <span>Contacts</span>
+          <button id="add-contact-btn" class="btn btn-sm btn-primary">＋ Add contact</button>
+        </div>
+        <div id="contacts-table-wrap">
+          <table id="contacts-table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Aliases</th>
+                <th>Tone</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="contacts-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Templates -->
+      <div class="card settings-templates-card">
+        <div class="settings-section-title" style="display:flex;justify-content:space-between;align-items:center;">
+          <span>Templates</span>
+          <button id="add-template-btn" class="btn btn-sm btn-primary">＋ Add template</button>
+        </div>
+        <div id="templates-list"></div>
+      </div>
+    </section>
+
+  </main><!-- /#main -->
+</div><!-- /#app -->
+
+<!-- ═══════════════════════════════════════════════════════════════
+     CONTACT EDIT MODAL
+════════════════════════════════════════════════════════════════ -->
+<div id="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+  <div id="modal-box">
+    <h2 id="modal-title">Edit contact</h2>
+    <input type="hidden" id="modal-contact-id" />
+
+    <div class="form-row">
+      <div class="form-group">
+        <label for="modal-name">Name *</label>
+        <input type="text" id="modal-name" placeholder="Rajesh Sharma" />
+      </div>
+      <div class="form-group">
+        <label for="modal-email">Email *</label>
+        <input type="email" id="modal-email" placeholder="rajesh@example.com" />
+      </div>
+    </div>
+    <div class="form-group">
+      <label for="modal-aliases">Aliases <span class="text-muted">(comma-separated)</span></label>
+      <input type="text" id="modal-aliases" placeholder="sharma ji, rajesh ji" />
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label for="modal-salutation">Salutation</label>
+        <input type="text" id="modal-salutation" placeholder="Dear Mr. Sharma" />
+      </div>
+      <div class="form-group">
+        <label for="modal-tone">Tone</label>
+        <select id="modal-tone">
+          <option value="formal">Formal</option>
+          <option value="very_formal">Very Formal</option>
+          <option value="friendly_formal">Friendly Formal</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group">
+      <label for="modal-notes">Notes</label>
+      <textarea id="modal-notes" placeholder="Any additional context…" style="min-height:64px;"></textarea>
+    </div>
+
+    <div id="modal-actions">
+      <button id="modal-cancel-btn" class="btn btn-secondary">Cancel</button>
+      <button id="modal-save-btn" class="btn btn-primary">Save contact</button>
+    </div>
+  </div>
+</div>
+
+<div id="reply-modal-overlay" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="reply-modal-title">
+  <div class="reply-modal-box">
+    <h2 id="reply-modal-title">How would you like to respond?</h2>
+    <p class="text-sm text-muted">Add the points you want to include. The draft will use these details and the email you pasted.</p>
+    <textarea id="reply-notes" placeholder="For example: confirm the meeting and ask them to share the agenda." style="min-height:120px"></textarea>
+    <div class="modal-actions">
+      <button id="reply-modal-cancel" class="btn btn-secondary">Cancel</button>
+      <button id="reply-modal-create" class="btn btn-primary">Create reply</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     TEMPLATE EDIT MODAL
+════════════════════════════════════════════════════════════════ -->
+<div id="tmpl-modal-overlay2" role="dialog" aria-modal="true" aria-labelledby="tmpl-modal-title2" style="display:none;">
+  <div>
+    <h2 id="tmpl-modal-title2" style="font-size:1.15rem;font-weight:700;margin-bottom:20px;">Template</h2>
+    <input type="hidden" id="tmpl-id" />
+    <div class="form-group">
+      <label for="tmpl-title">Title</label>
+      <input type="text" id="tmpl-title" placeholder="Payment reminder" />
+    </div>
+    <div class="form-group">
+      <label for="tmpl-hint">Instruction <span class="text-muted">(Hindi or Hinglish)</span></label>
+      <textarea id="tmpl-hint" placeholder="payment reminder bhejo…" style="min-height:80px;"></textarea>
+    </div>
+    <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:16px;">
+      <button id="tmpl-cancel-btn" class="btn btn-secondary">Cancel</button>
+      <button id="tmpl-save-btn" class="btn btn-primary">Save template</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     SEND COUNTDOWN OVERLAY
+════════════════════════════════════════════════════════════════ -->
+<div id="countdown-overlay" role="alertdialog" aria-modal="true" aria-labelledby="countdown-label">
+  <div id="countdown-box">
+    <div class="countdown-title">Confirm send</div>
+    <div id="countdown-num">10</div>
+    <div id="countdown-label">
+      Email will be sent in <strong id="countdown-num-inline">10</strong> seconds. Cancel any time before it sends.
+    </div>
+    <div style="display:flex;gap:12px;justify-content:center;margin-top:12px;">
+      <button id="countdown-cancel-btn" class="btn btn-danger">Cancel send</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     TOAST CONTAINER
+════════════════════════════════════════════════════════════════ -->
+<div id="toast-container" role="status" aria-live="polite"></div>
+
+<!-- Queue row review panel (inline) rendered by JS -->
+
+<script src="app.js"></script>
+</body>
+</html>
