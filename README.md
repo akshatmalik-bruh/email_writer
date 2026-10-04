@@ -93,7 +93,7 @@ email_writer/
 │   ├── index.html        # App UI template
 │   ├── style.css         # Dark-mode desktop design system
 │   └── app.js            # Frontend logic & real-time streaming parser
-└── HACKTOBERFEST_SUBMISSION.md  # Hacktoberfest Weekend Challenge Post
+ 
 ```
 
 ---
