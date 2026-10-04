@@ -184,7 +184,13 @@
           <div id="reply-contact-dropdown" role="listbox" aria-label="Recipient suggestions"></div>
         </div>
         <div id="reply-recipient-email" class="text-sm text-muted"></div>
-        <button id="reply-continue-btn" class="btn btn-primary">Continue <span aria-hidden="true">→</span></button>
+        <fieldset class="reply-tone-group">
+          <legend>Choose a tone</legend>
+          <label class="reply-tone-option"><input type="radio" name="reply-tone" value="formal" checked><span><strong>Formal</strong><small>Polished and professional</small></span></label>
+          <label class="reply-tone-option"><input type="radio" name="reply-tone" value="warm"><span><strong>Warm</strong><small>Friendly and professional</small></span></label>
+          <label class="reply-tone-option"><input type="radio" name="reply-tone" value="casual"><span><strong>Casual</strong><small>Relaxed and conversational</small></span></label>
+        </fieldset>
+        <button id="reply-continue-btn" class="btn btn-primary">Draft reply <span aria-hidden="true">→</span></button>
       </div>
     </section>
 
@@ -331,18 +337,6 @@
     <div id="modal-actions">
       <button id="modal-cancel-btn" class="btn btn-secondary">Cancel</button>
       <button id="modal-save-btn" class="btn btn-primary">Save contact</button>
-    </div>
-  </div>
-</div>
-
-<div id="reply-modal-overlay" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="reply-modal-title">
-  <div class="reply-modal-box">
-    <h2 id="reply-modal-title">How would you like to respond?</h2>
-    <p class="text-sm text-muted">Add the points you want to include. The draft will use these details and the email you pasted.</p>
-    <textarea id="reply-notes" placeholder="For example: confirm the meeting and ask them to share the agenda." style="min-height:120px"></textarea>
-    <div class="modal-actions">
-      <button id="reply-modal-cancel" class="btn btn-secondary">Cancel</button>
-      <button id="reply-modal-create" class="btn btn-primary">Create reply</button>
     </div>
   </div>
 </div>

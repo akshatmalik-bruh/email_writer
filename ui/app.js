@@ -613,13 +613,13 @@ async function doRedraft(instruction) {
 /* ─────────────────────────────────────────────────────────────────
    9a. GRAMMAR POLISH + REPLY PROMPT
 ───────────────────────────────────────────────────────────────── */
-async function runAssistedDraft(task, source, notes, contactId, recipientEmail = "") {
+async function runAssistedDraft(task, source, notes, contactId, recipientEmail = "", tone = "formal") {
   setDraftingState(true);
   resultSection.classList.add("visible");
   startFieldStream();
   document.getElementById("draft-output-card").scrollIntoView({ behavior: "smooth", block: "nearest" });
   try {
-    const res = await api("assist_email", task, source, notes, contactId || null, recipientEmail);
+    const res = await api("assist_email", task, source, notes, contactId || null, recipientEmail, tone);
     if (!res?.job_id) throw new Error("Could not start email assistance.");
     onJob(res.job_id, (event, data) => {
       if (event === "field") updateFieldStream(data);
@@ -650,8 +650,6 @@ const replySource = document.getElementById("reply-source");
 const replyContactInput = document.getElementById("reply-recipient-input");
 const replyContactDropdown = document.getElementById("reply-contact-dropdown");
 let replySelectedContactId = null;
-const replyModal = document.getElementById("reply-modal-overlay");
-const replyNotes = document.getElementById("reply-notes");
 
 function refreshReplyContactOptions() {
   if (!replyContactInput || !replySelectedContactId) return;
@@ -693,24 +691,15 @@ replyContactInput.addEventListener("blur", () => {
   setTimeout(() => replyContactDropdown.classList.remove("open"), 180);
 });
 
-document.getElementById("reply-continue-btn").addEventListener("click", () => {
+document.getElementById("reply-continue-btn").addEventListener("click", async () => {
   if (!replySource.value.trim()) { toast("Paste the email you received first.", "warn"); return; }
-  replyNotes.value = "";
-  replyModal.classList.add("open");
-  replyNotes.focus();
-});
-document.getElementById("reply-modal-cancel").addEventListener("click", () => replyModal.classList.remove("open"));
-replyModal.addEventListener("click", event => { if (event.target === replyModal) replyModal.classList.remove("open"); });
-document.getElementById("reply-modal-create").addEventListener("click", async () => {
-  if (!replyNotes.value.trim()) { toast("Tell me how you want to respond.", "warn"); return; }
   const source = replySource.value.trim();
-  const notes = replyNotes.value.trim();
+  const tone = document.querySelector('input[name="reply-tone"]:checked')?.value || "formal";
   const contact = allContacts.find(item => item.id === replySelectedContactId);
   const typedRecipient = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(replyContactInput.value.trim()) ? replyContactInput.value.trim() : "";
-  replyModal.classList.remove("open");
   showScreen("new-email");
   openComposer();
-  userInput.value = `Reply to the following email:\n${source}\n\nReply with these points:\n${notes}`;
+  userInput.value = `Reply to the following email:\n${source}`;
   userInput.dispatchEvent(new Event("input", { bubbles: true }));
   selectContact(contact || null);
   if (!contact && typedRecipient) {
@@ -719,7 +708,7 @@ document.getElementById("reply-modal-create").addEventListener("click", async ()
     hiddenContactId.value = "";
     selectedContactEl.textContent = `Email: ${typedRecipient}`;
   }
-  await runAssistedDraft("reply", source, notes, contact?.id || null, typedRecipient);
+  await runAssistedDraft("reply", source, "", contact?.id || null, typedRecipient, tone);
 });
 
 /* ─────────────────────────────────────────────────────────────────
@@ -1300,7 +1289,6 @@ document.addEventListener("keydown", e => {
   }
   if (e.key === "Escape") {
     if (modalOverlay.classList.contains("open"))       closeContactModal();
-    if (replyModal.classList.contains("open"))         replyModal.classList.remove("open");
     if (tmplOverlay.style.display === "flex")          tmplOverlay.style.display = "none";
     if (countdownOverlay.classList.contains("open"))   cancelCountdownBtn.click();
   }

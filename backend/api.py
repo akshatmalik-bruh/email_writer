@@ -148,12 +148,15 @@ class API:
         job_id_holder[0] = result["job_id"]   # give the closure its job_id
         return result
 
-    def assist_email(self, task, source, notes="", contact_id=None, recipient_email=""):
+    def assist_email(self, task, source, notes="", contact_id=None, recipient_email="", tone="formal"):
         """Polish an email or draft a reply and save it into the review flow."""
         if task not in ("polish", "reply"):
             raise ValueError("Unsupported email task.")
         source = str(source or "").strip()
         notes = str(notes or "").strip()
+        tone = str(tone or "formal").strip().lower()
+        if tone not in ("formal", "casual", "warm"):
+            tone = "formal"
         if not source:
             raise ValueError("Paste an email first.")
         if task == "polish":
@@ -162,11 +165,10 @@ class API:
                 f"EMAIL TO POLISH:\n<<<\n{source}\n>>>"
             )
         else:
-            if not notes:
-                raise ValueError("Tell me what you want your reply to say.")
+            reply_context = (f"SENDER'S REPLY NOTES:\n<<<\n{notes}\n>>>" if notes else "No additional reply notes were provided.")
             prompt = (
-                "TASK: WRITE_REPLY\nWrite a concise, professional reply to the received email. Use only facts from the received email and the sender's reply notes. Do not claim an action has been completed unless the notes say so. Use an appropriate reply subject.\n"
-                f"RECEIVED EMAIL:\n<<<\n{source}\n>>>\nSENDER'S REPLY NOTES:\n<<<\n{notes}\n>>>"
+                f"TASK: WRITE_REPLY\nWrite an actual response to the received email, not an edited version of it. Address its questions or requests only when the answer is supported by the supplied context. Do not invent the user's opinions, decisions, availability, facts, or commitments. When the email asks for information or a decision that is not supplied, briefly say that the user will respond separately only if the user requested that; otherwise ask the sender a concise clarifying question or leave that point unanswered. Do not summarize or reproduce the received email. Tone: {tone}.\nUse only facts from the received email and reply notes. Do not claim an action has been completed unless the notes say so. Use an appropriate Re: subject.\n"
+                f"RECEIVED EMAIL:\n<<<\n{source}\n>>>\n{reply_context}"
             )
         job_id_holder = [None]
 
@@ -175,6 +177,8 @@ class API:
             contact = self._db.contact(int(contact_id)) if contact_id else None
             if contact_id and not contact:
                 raise ValueError("The selected recipient no longer exists.")
+            if contact and task == "reply":
+                contact = {**contact, "tone": tone}
             destination = contact.get("email", "") if contact else str(recipient_email or "").strip()
             result = llm.generate(
                 prompt, contact,

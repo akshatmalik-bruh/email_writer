@@ -18,7 +18,7 @@ Preserve every substantive requirement and all explicitly supplied names, organi
 
 Determine the email's intended audience from the CURRENT USER REQUEST first. If the request explicitly names the audience (for example, 'email the operations team' or 'ask operations to send the readings'), address that audience directly and phrase the request to them. Do not address a selected contact instead and ask that person to forward, request, or relay the message unless the user explicitly asks that person to do so. Recipient metadata represents the selected delivery contact; use its name for the greeting only when the current request does not specify a different audience. If no audience is specified in either place, do not invent a name; use 'Dear Team,' only when a group is clearly addressed, otherwise use 'Dear Sir/Madam,'.
 
-For an ordinary new email, write a concise, professional email of 3-6 sentences unless the request specifies another length. Respect word limits, treating them as instructions rather than email content. Do not use placeholders unless following a saved template. End ordinary email_en with this exact signature on separate lines: Regards, then Neeraj Kumar. For a message beginning with SAVED EMAIL TEMPLATE:, follow the supplied template, preserve bracketed placeholders, its requested signature, and its paragraph/list structure, even when longer than 6 sentences. For TASK: GRAMMAR_POLISH, only fix grammar, spelling, and punctuation; preserve meaning, facts, tone, structure, and existing sign-off, and do not add a subject if none was supplied. For TASK: WRITE_REPLY, draft a concise, professional reply based only on the received email and the user's reply notes; do not claim actions or commitments unless the notes explicitly state them, and use an appropriate subject.
+For an ordinary new email, write a concise, professional email of 3-6 sentences unless the request specifies another length. Respect word limits, treating them as instructions rather than email content. Do not use placeholders unless following a saved template. End ordinary email_en with this exact signature on separate lines: Regards, then Neeraj Kumar. For a message beginning with SAVED EMAIL TEMPLATE:, follow the supplied template, preserve bracketed placeholders, its requested signature, and its paragraph/list structure, even when longer than 6 sentences. For TASK: GRAMMAR_POLISH, only fix grammar, spelling, and punctuation; preserve meaning, facts, tone, structure, and existing sign-off, and do not add a subject if none was supplied. For TASK: WRITE_REPLY, write a reply that directly responds to the received email's questions, requests, or information, using the user's reply notes to decide what to say. Never polish, paraphrase, summarize, or restate the received email as though that were a reply. Follow the explicit reply tone, keep unsupported answers out, and do not claim actions or commitments unless the notes say so. Use an appropriate Re: subject.
 
 Before responding, silently check that the output is an actual email, every substantive request is represented, no writer instruction leaked into the body, no facts were invented or borrowed from examples/other drafts, and any length limit is met. Return only JSON matching the requested schema, with a simple 2-3 sentence Hindi (Devanagari) summary that accurately summarizes the generated email. Do not include reasoning, notes, or explanations."""
 
@@ -117,17 +117,19 @@ def generate(user_input, contact=None, sign_off="Regards,", sender_name="Neeraj 
     today = today or date.today()
     profile = "\n".join((f"RECIPIENT: {contact.get('name','')}" , f"SALUTATION: {contact.get('salutation','')}" , f"TONE: {contact.get('tone','formal')}" , f"SIGN-OFF: {REQUIRED_SIGNATURE}"))
     examples = "\n".join(x.get("body_en", "") for x in (style_samples or []))
+    is_reply = text.startswith("TASK: WRITE_REPLY")
+    task_mode = "WRITE A REPLY TO THE RECEIVED EMAIL" if is_reply else ("REDRAFT CURRENT EMAIL" if previous else "CREATE A NEW EMAIL")
     prompt = (
-        "TASK MODE: " + ("REDRAFT CURRENT EMAIL" if previous else "CREATE A NEW EMAIL") + "\n"
-        "RECIPIENT AND STYLE METADATA (may inform salutation/tone; not additional email facts):\n"
-        f"{profile}\n"
-        "STYLE EXAMPLES (style only; do not reuse any facts, names, subject, or commitments):\n"
-        f"<<<STYLE EXAMPLES>>>\n{examples}\n<<<END STYLE EXAMPLES>>>\n"
-        "CURRENT USER REQUEST (the authoritative source of this email's content):\n"
-        f"<<<CURRENT REQUEST>>>\n{text}\n<<<END CURRENT REQUEST>>>\n"
-        "Generate the subject and email from this request alone, plus the explicitly supplied recipient metadata. "
-        "Do not carry facts forward from examples or other requests. Verify that each substantive requirement "
-        "is included and each email fact is supported by the current request or recipient metadata."
+        "TASK MODE: " + task_mode + "\n"
+        + "RECIPIENT AND STYLE METADATA (may inform salutation/tone; not additional email facts):\n"
+        + f"{profile}\n"
+        + "STYLE EXAMPLES (style only; do not reuse any facts, names, subject, or commitments):\n"
+        + f"<<<STYLE EXAMPLES>>>\n{examples}\n<<<END STYLE EXAMPLES>>>\n"
+        + "CURRENT USER REQUEST (the authoritative source of this email's content):\n"
+        + f"<<<CURRENT REQUEST>>>\n{text}\n<<<END CURRENT REQUEST>>>\n"
+        + ("Use the received email and the reply notes in the current request as distinct inputs. Respond to the received message directly; do not edit or restate it. " if is_reply else "Generate the subject and email from this request alone, plus the explicitly supplied recipient metadata. ")
+        + "Do not carry facts forward from examples or other requests. Verify that each substantive requirement "
+        + "is included and each email fact is supported by the current request or recipient metadata."
     )
     if previous:
         prompt += (
